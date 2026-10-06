@@ -26,8 +26,7 @@ export default function Login() {
   return (
     <div style={estilos.centrado}>
       <form onSubmit={enviar} style={estilos.tarjeta}>
-        <h1>Iniciar sesion</h1>
-
+        <h1>Punto de Venta</h1>
         <label>
           Usuario
           <input

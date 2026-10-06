@@ -8,6 +8,7 @@ export default function PuntoVenta() {
   const [carrito, setCarrito] = useState([])
   const [busqueda, setBusqueda] = useState('')
   const [checkout, setCheckout] = useState({ clienteId: '', usuarioId: '', descuento: 0, observaciones: '' })
+  const [cantidadesSel, setCantidadesSel] = useState({})
   const [error, setError] = useState(null)
 
   const cargarCarrito = () => cliente.get('/ventas/carrito').then((r) => setCarrito(r.data))
@@ -27,8 +28,9 @@ export default function PuntoVenta() {
     try {
       // VULNERABILIDAD: el precio lo manda el navegador y el backend lo acepta sin
       // compararlo con la base de datos, por lo que se puede alterar el precio de venta
+      const cantidadNum = Number(cantidad)
       const { data } = await cliente.post('/ventas/carrito', null, {
-        params: { productoId: producto.id, cantidad, precio: producto.precio },
+        params: { productoId: producto.id, cantidad: cantidadNum, precio: producto.precio },
       })
       setCarrito(data)
     } catch (e) {
@@ -38,6 +40,19 @@ export default function PuntoVenta() {
 
   const quitar = async (indice) => {
     const { data } = await cliente.delete(`/ventas/carrito/${indice}`)
+    setCarrito(data)
+  }
+
+  const actualizarCantidad = async (indice, valor) => {
+    const cantidad = Number(valor)
+    if (!Number.isFinite(cantidad) || cantidad <= 0) {
+      const { data } = await cliente.delete(`/ventas/carrito/${indice}`)
+      setCarrito(data)
+      return
+    }
+    const { data } = await cliente.put(`/ventas/carrito/${indice}`, null, {
+      params: { cantidad },
+    })
     setCarrito(data)
   }
 
@@ -96,9 +111,19 @@ export default function PuntoVenta() {
                 <td>{p.nombre}</td>
                 <td>{p.precio}</td>
                 <td>{p.stock}</td>
-                <td>
-                  <button onClick={() => agregar(p, 1)}>Agregar</button>
-                </td>
+                    <td>
+                      <input
+                        type="number"
+                        step="1"
+                        min="0"
+                        value={cantidadesSel[p.id] ?? 1}
+                        onChange={(e) =>
+                          setCantidadesSel((s) => ({ ...s, [p.id]: e.target.value }))
+                        }
+                        style={{ width: '60px' }}
+                      />
+                      <button onClick={() => agregar(p, cantidadesSel[p.id] ?? 1)}>Agregar</button>
+                    </td>
               </tr>
             ))}
           </tbody>
@@ -110,13 +135,19 @@ export default function PuntoVenta() {
 
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <tbody>
-            {carrito.map((linea, indice) => (
-              <tr key={indice}>
-                <td>#{linea.productoId}</td>
-                <td>
-                  {linea.cantidad} x {linea.precioUnit}
-                </td>
-                <td>{linea.subtotal}</td>
+                {carrito.map((linea, indice) => (
+                  <tr key={indice}>
+                    <td>#{linea.productoId}</td>
+                    <td>
+                      <input
+                        type="number"
+                        step="1"
+                        value={linea.cantidad}
+                        onChange={(e) => actualizarCantidad(indice, e.target.value)}
+                        style={{ width: '60px' }}
+                      /> x {linea.precioUnit}
+                    </td>
+                    <td>{linea.subtotal}</td>
                 <td>
                   <button onClick={() => quitar(indice)}>x</button>
                 </td>

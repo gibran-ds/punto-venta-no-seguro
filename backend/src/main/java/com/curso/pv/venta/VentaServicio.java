@@ -103,6 +103,32 @@ private final VentaRepositorio ventas;
         }
     }
 
+    public List<Map<String, Object>> actualizarCantidad(int indice, Integer cantidad, HttpServletRequest request) {
+        List<Map<String, Object>> carrito = carritoDe(request);
+        if (indice < 0 || indice >= carrito.size()) {
+            return carrito;
+        }
+        if (cantidad == null || cantidad <= 0) {
+            carrito.remove(indice);
+            return carrito;
+        }
+        Map<String, Object> linea = carrito.get(indice);
+        linea.put("cantidad", cantidad);
+        Object precioObj = linea.get("precioUnit");
+        BigDecimal precioUnit = BigDecimal.ZERO;
+        if (precioObj instanceof BigDecimal) {
+            precioUnit = (BigDecimal) precioObj;
+        } else if (precioObj != null) {
+            try {
+                precioUnit = new BigDecimal(String.valueOf(precioObj));
+            } catch (Exception ignored) {
+                precioUnit = BigDecimal.ZERO;
+            }
+        }
+        linea.put("subtotal", precioUnit.multiply(BigDecimal.valueOf(cantidad.longValue())));
+        return carrito;
+    }
+
     // ------------------------------------------------------------------
     // Checkout
     // ------------------------------------------------------------------

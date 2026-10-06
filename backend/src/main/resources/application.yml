@@ -10,7 +10,7 @@ server:
         name: PVSESSION
         http-only: false
         secure: false
-        same-site: none
+        same-site: lax
       timeout: 30d
       persistent: true
   tomcat:
