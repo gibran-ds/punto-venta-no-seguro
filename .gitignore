@@ -1,0 +1,22 @@
+# Dependencias Java / Maven
+backend/target/
+backend/*.jar
+backend/logs/
+backend/uploads/
+
+# Dependencias Node
+frontend/node_modules/
+frontend/dist/
+
+# Entorno
+.env
+.env.local
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Sistema
+.DS_Store
+Thumbs.db
